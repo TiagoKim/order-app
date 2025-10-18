@@ -1,0 +1,59 @@
+.app {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.order-screen {
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 2rem 2rem 2rem;
+}
+
+.product-section {
+  margin-bottom: 2rem;
+}
+
+.product-section h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.admin-screen {
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.admin-screen h2 {
+  color: #333;
+  font-size: 2rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .order-screen {
+    padding: 0 1rem 1rem 1rem;
+  }
+  
+  .product-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .product-section h2 {
+    font-size: 1.5rem;
+  }
+}
