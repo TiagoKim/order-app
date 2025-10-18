@@ -11,7 +11,8 @@ app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:5173',
     'https://cozy-coffee-frontend.onrender.com', // Render 프론트엔드 URL
-    'https://order-app-frontend.onrender.com' // 새로운 프론트엔드 URL
+    'https://order-app-frontend.onrender.com', // 새로운 프론트엔드 URL
+    'https://order-app-frontend-e5ig.onrender.com' // 실제 Render 프론트엔드 URL
   ],
   credentials: true
 }));
