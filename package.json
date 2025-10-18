@@ -2,14 +2,14 @@
   "name": "cozy-coffee-order-app",
   "version": "1.0.0",
   "description": "COZY 커피 주문 앱 - 풀스택 애플리케이션",
-  "main": "src/server/index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node src/server/index.js",
+    "start": "node server.js",
     "dev": "concurrently \"cd server && npm run dev\" \"cd ui && npm run dev\"",
     "build": "cd ui && npm run build",
     "install-all": "cd server && npm install && cd ../ui && npm install",
     "render-postbuild": "cd server && npm install",
-    "render-start": "node src/server/index.js"
+    "render-start": "node server.js"
   },
   "keywords": [
     "coffee",
