@@ -8,6 +8,7 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'cozy_coffee_db',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'password',
+  ssl: process.env.DB_HOST && process.env.DB_HOST.includes('render.com') ? { rejectUnauthorized: false } : false,
   max: 20, // 최대 연결 수
   idleTimeoutMillis: 30000, // 유휴 연결 타임아웃
   connectionTimeoutMillis: 2000, // 연결 타임아웃
@@ -25,33 +26,9 @@ pool.on('error', (err) => {
 // 데이터베이스 초기화 함수
 const initializeDatabase = async () => {
   try {
-    // 데이터베이스가 존재하는지 확인하고 생성
-    const adminPool = new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT || 5432,
-      database: 'postgres', // 기본 postgres 데이터베이스에 연결
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'password',
-    });
-
-    const dbName = process.env.DB_NAME || 'cozy_coffee_db';
+    // Render 데이터베이스는 이미 생성되어 있으므로 테이블 생성만 진행
+    console.log('📦 Render 데이터베이스에 연결 중...');
     
-    // 데이터베이스 존재 여부 확인
-    const dbExists = await adminPool.query(
-      'SELECT 1 FROM pg_database WHERE datname = $1',
-      [dbName]
-    );
-
-    if (dbExists.rows.length === 0) {
-      console.log(`📦 데이터베이스 '${dbName}' 생성 중...`);
-      await adminPool.query(`CREATE DATABASE ${dbName}`);
-      console.log(`✅ 데이터베이스 '${dbName}' 생성 완료`);
-    } else {
-      console.log(`✅ 데이터베이스 '${dbName}' 이미 존재함`);
-    }
-
-    await adminPool.end();
-
     // 테이블 생성
     await createTables();
     
