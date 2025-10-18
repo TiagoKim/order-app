@@ -1,9 +1,10 @@
 services:
-  - type: web
+  - type: static_site
     name: cozy-coffee-frontend
     env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    plan: free
+    buildCommand: npm install && npm run build && ls -la dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_BASE_URL
         value: https://order-app-backend-rsla.onrender.com/api
