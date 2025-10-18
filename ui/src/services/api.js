@@ -4,6 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001
 // 공통 API 호출 함수
 const apiCall = async (endpoint, options = {}) => {
   try {
+    console.log(`API 호출: ${API_BASE_URL}${endpoint}`);
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
@@ -12,6 +13,8 @@ const apiCall = async (endpoint, options = {}) => {
       ...options,
     });
 
+    console.log(`API 응답 상태: ${response.status}`);
+    
     if (!response.ok) {
       let errorMessage = `HTTP error! status: ${response.status}`;
       try {
@@ -95,6 +98,9 @@ export const checkAPIHealth = async () => {
   try {
     const baseUrl = API_BASE_URL.replace('/api', '');
     const response = await fetch(`${baseUrl}/`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     const data = await response.json();
     return data.success;
   } catch (error) {
