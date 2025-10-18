@@ -66,7 +66,18 @@ function App() {
         menuAPI.getInventory()
       ])
       
-      setMenuItems(menuResponse.data)
+      // 메뉴 데이터 중복 제거 (이름 기준, ID가 작은 것 유지)
+      const uniqueMenus = menuResponse.data.reduce((acc, current) => {
+        const existingMenuIndex = acc.findIndex(menu => menu.name === current.name);
+        if (existingMenuIndex === -1) {
+          acc.push(current);
+        } else if (current.id < acc[existingMenuIndex].id) {
+          acc[existingMenuIndex] = current;
+        }
+        return acc;
+      }, []);
+      
+      setMenuItems(uniqueMenus)
       setInventory(inventoryResponse.data)
       
     } catch (error) {
@@ -90,7 +101,18 @@ function App() {
         orderAPI.getOrderStats()
       ])
       
-      setInventory(inventoryResponse.data)
+      // 재고 데이터 중복 제거 (이름 기준, ID가 작은 것 유지)
+      const uniqueInventory = inventoryResponse.data.reduce((acc, current) => {
+        const existingItemIndex = acc.findIndex(item => item.name === current.name);
+        if (existingItemIndex === -1) {
+          acc.push(current);
+        } else if (current.id < acc[existingItemIndex].id) {
+          acc[existingItemIndex] = current;
+        }
+        return acc;
+      }, []);
+      
+      setInventory(uniqueInventory)
       setOrders(ordersResponse.data.orders)
       setOrderStats(statsResponse.data)
       
