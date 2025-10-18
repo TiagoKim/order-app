@@ -37,7 +37,7 @@ npm run preview
    - Build Command: `npm install && npm run build`
    - Publish Directory: `dist`
 5. 환경변수 설정:
-   - `VITE_API_BASE_URL`: 백엔드 API URL (예: `https://your-backend-app.onrender.com/api`)
+   - `VITE_API_BASE_URL`: 백엔드 API URL (예: `https://order-app-backend-rsla.onrender.com/api`)
 
 ## 환경변수
 

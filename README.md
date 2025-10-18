@@ -54,7 +54,7 @@ cd ui && npm run dev
 - `FRONTEND_URL`: 프론트엔드 URL
 
 ### 프론트엔드
-- `VITE_API_BASE_URL`: 백엔드 API URL
+- `VITE_API_BASE_URL`: 백엔드 API URL (예: `https://order-app-backend-rsla.onrender.com/api`)
 
 ## 기술 스택
 

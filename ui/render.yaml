@@ -6,5 +6,5 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://your-backend-app.onrender.com/api
+        value: https://order-app-backend-rsla.onrender.com/api
         sync: false

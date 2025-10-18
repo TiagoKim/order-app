@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:5173',
-    'https://cozy-coffee-frontend.onrender.com' // Render 프론트엔드 URL
+    'https://order-app-backend-rsla.onrender.com' // Render 프론트엔드 URL
   ],
   credentials: true
 }));
