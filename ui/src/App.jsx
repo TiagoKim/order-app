@@ -1,85 +1,114 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import ProductCard from './components/ProductCard'
 import ShoppingCart from './components/ShoppingCart'
 import AdminDashboard from './components/AdminDashboard'
 import InventoryManagement from './components/InventoryManagement'
 import OrderManagement from './components/OrderManagement'
+import { menuAPI, orderAPI, handleAPIError, checkAPIHealth } from './services/api'
 import './App.css'
 
 function App() {
-  const [currentScreen, setCurrentScreen] = useState('order')
+  const [currentScreen, setCurrentScreen] = useState('admin')
   const [cart, setCart] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  
+  // 메뉴 데이터
+  const [menuItems, setMenuItems] = useState([])
   
   // 관리자 화면 상태 관리
-  const [inventory, setInventory] = useState([
-    { id: 1, name: '아메리카노(ICE)', quantity: 10 },
-    { id: 2, name: '아메리카노(HOT)', quantity: 8 },
-    { id: 3, name: '카페라떼', quantity: 15 }
-  ])
-  
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      orderTime: new Date('2024-07-31T13:00:00'),
-      status: 'received',
-      items: [
-        { name: '아메리카노(ICE)', quantity: 1, price: 4000 }
-      ],
-      totalAmount: 4000
-    }
-  ])
+  const [inventory, setInventory] = useState([])
+  const [orders, setOrders] = useState([])
+  const [orderStats, setOrderStats] = useState({
+    total_orders: 0,
+    received_orders: 0,
+    preparing_orders: 0,
+    completed_orders: 0,
+    cancelled_orders: 0
+  })
 
-  // 커피 및 스무디 메뉴 데이터
-  const menuItems = [
-    {
-      id: 1,
-      name: '아메리카노(ICE)',
-      price: 4000,
-      description: '시원하고 깔끔한 아이스 아메리카노',
-      image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=200&fit=crop&crop=center'
-    },
-    {
-      id: 2,
-      name: '아메리카노(HOT)',
-      price: 4000,
-      description: '따뜻하고 진한 핫 아메리카노',
-      image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=300&h=200&fit=crop&crop=center'
-    },
-    {
-      id: 3,
-      name: '카페라떼',
-      price: 5000,
-      description: '부드러운 우유와 에스프레소의 조화',
-      image: 'https://images.unsplash.com/photo-1561047029-3000c68339ca?w=300&h=200&fit=crop&crop=center'
-    },
-    {
-      id: 4,
-      name: '카라멜 마키아토',
-      price: 5500,
-      description: '달콤한 카라멜과 에스프레소',
-      image: 'https://images.unsplash.com/photo-1517701604599-bb29b5650904?w=300&h=200&fit=crop&crop=center'
-    },
-    {
-      id: 5,
-      name: '딸기 스무디',
-      price: 6000,
-      description: '상큼한 딸기와 요거트의 만남',
-      image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=300&h=200&fit=crop&crop=center'
-    },
-    {
-      id: 6,
-      name: '망고 스무디',
-      price: 6000,
-      description: '달콤한 망고의 시원한 스무디',
-      image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&h=200&fit=crop&crop=center'
-    }
-  ]
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadInitialData()
+  }, [])
 
+  // 관리자 화면으로 전환 시 데이터 새로고침
+  useEffect(() => {
+    if (currentScreen === 'admin') {
+      loadAdminData()
+    }
+  }, [currentScreen])
+
+  // 화면 전환 함수
+  const handleScreenChange = (screen) => {
+    setCurrentScreen(screen)
+    if (screen === 'admin') {
+      loadAdminData()
+    }
+  }
+
+  // 초기 데이터 로드
+  const loadInitialData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // API 상태 확인
+      const isAPIHealthy = await checkAPIHealth()
+      if (!isAPIHealthy) {
+        throw new Error('서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.')
+      }
+      
+      // 메뉴 데이터와 재고 정보 병렬 로드
+      const [menuResponse, inventoryResponse] = await Promise.all([
+        menuAPI.getMenus(),
+        menuAPI.getInventory()
+      ])
+      
+      setMenuItems(menuResponse.data)
+      setInventory(inventoryResponse.data)
+      
+    } catch (error) {
+      console.error('초기 데이터 로드 실패:', error)
+      setError(handleAPIError(error, '데이터를 불러오는데 실패했습니다.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 관리자 데이터 로드
+  const loadAdminData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // 병렬로 데이터 로드
+      const [inventoryResponse, ordersResponse, statsResponse] = await Promise.all([
+        menuAPI.getInventory(),
+        orderAPI.getOrders(),
+        orderAPI.getOrderStats()
+      ])
+      
+      setInventory(inventoryResponse.data)
+      setOrders(ordersResponse.data.orders)
+      setOrderStats(statsResponse.data)
+      
+    } catch (error) {
+      console.error('관리자 데이터 로드 실패:', error)
+      setError(handleAPIError(error, '관리자 데이터를 불러오는데 실패했습니다.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 장바구니 관련 함수들
   const addToCart = (item, options) => {
     // 재고 확인
     const inventoryItem = inventory.find(inv => inv.name === item.name)
-    if (inventoryItem && inventoryItem.quantity <= 0) {
+    const currentStock = inventoryItem?.stock_quantity || inventoryItem?.quantity || item.stock_quantity || 0
+    
+    if (currentStock <= 0) {
       alert(`${item.name}이(가) 품절되었습니다.`)
       return
     }
@@ -101,8 +130,8 @@ function App() {
       if (existingItem) {
         // 재고 확인 (기존 아이템 + 새로 추가할 아이템)
         const totalQuantity = existingItem.quantity + 1
-        if (inventoryItem && totalQuantity > inventoryItem.quantity) {
-          alert(`재고가 부족합니다. (현재 재고: ${inventoryItem.quantity}개)`)
+        if (totalQuantity > currentStock) {
+          alert(`재고가 부족합니다. (현재 재고: ${currentStock}개)`)
           return prevCart
         }
         
@@ -141,81 +170,193 @@ function App() {
     }, 0)
   }
 
-  const handleOrder = () => {
+  // 주문 처리
+  const handleOrder = async () => {
     if (cart.length === 0) {
       alert('장바구니가 비어있습니다.')
       return
     }
     
-    // 재고 재확인 및 차감
-    const inventoryUpdates = []
-    for (const cartItem of cart) {
-      const inventoryItem = inventory.find(inv => inv.name === cartItem.name)
-      if (!inventoryItem || inventoryItem.quantity < cartItem.quantity) {
-        alert(`${cartItem.name}의 재고가 부족합니다. (현재 재고: ${inventoryItem?.quantity || 0}개)`)
-        return
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // 주문 데이터 구성
+      const orderData = {
+        items: cart.map(item => {
+          const menuItem = menuItems.find(menu => menu.name === item.name)
+          if (!menuItem) {
+            throw new Error(`메뉴를 찾을 수 없습니다: ${item.name}`)
+          }
+          
+          return {
+            menu_id: menuItem.id,
+            quantity: item.quantity,
+            unit_price: item.basePrice + (item.options.addShot ? 500 : 0) + (item.options.addSyrup ? 0 : 0),
+            options: [
+              ...(item.options.addShot ? [{ name: '샷 추가', price: 500 }] : []),
+              ...(item.options.addSyrup ? [{ name: '시럽 추가', price: 0 }] : [])
+            ]
+          }
+        }),
+        customer_name: null,
+        customer_phone: null,
+        notes: null
       }
-      inventoryUpdates.push({
-        id: inventoryItem.id,
-        newQuantity: inventoryItem.quantity - cartItem.quantity
-      })
+      
+      // 주문 생성
+      const response = await orderAPI.createOrder(orderData)
+      
+      alert(`주문이 완료되었습니다!\n주문번호: ${response.data.order_number}\n총 금액: ${response.data.total_amount.toLocaleString()}원`)
+      setCart([])
+      
+      // 관리자 화면이면 데이터 새로고침
+      if (currentScreen === 'admin') {
+        loadAdminData()
+      }
+      
+    } catch (error) {
+      console.error('주문 처리 실패:', error)
+      setError(handleAPIError(error, '주문 처리 중 오류가 발생했습니다.'))
+    } finally {
+      setLoading(false)
     }
-    
-    // 재고 차감
-    inventoryUpdates.forEach(update => {
-      updateInventory(update.id, update.newQuantity)
-    })
-    
-    // 주문 생성
-    const newOrder = {
-      id: Date.now(),
-      orderTime: new Date(),
-      status: 'received',
-      items: cart.map(item => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: item.basePrice + (item.options.addShot ? 500 : 0) + (item.options.addSyrup ? 0 : 0)
-      })),
-      totalAmount: getTotalPrice()
-    }
-    
-    setOrders(prevOrders => [newOrder, ...prevOrders])
-    alert(`주문이 완료되었습니다!\n총 금액: ${getTotalPrice().toLocaleString()}원`)
-    setCart([])
   }
 
   // 관리자 화면 함수들
-  const updateInventory = (itemId, newQuantity) => {
-    setInventory(prevInventory =>
-      prevInventory.map(item =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
+  const updateInventory = async (itemId, newQuantity) => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      await menuAPI.updateInventory(itemId, newQuantity)
+      
+      // 로컬 상태 업데이트
+      setInventory(prevInventory =>
+        prevInventory.map(item =>
+          item.id === itemId ? { ...item, stock_quantity: newQuantity } : item
+        )
       )
-    )
-  }
-
-  const updateOrderStatus = (orderId, newStatus) => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.id === orderId ? { ...order, status: newStatus } : order
+      
+      // 메뉴 아이템도 업데이트
+      setMenuItems(prevMenuItems =>
+        prevMenuItems.map(menuItem =>
+          menuItem.id === itemId ? { ...menuItem, stock_quantity: newQuantity } : menuItem
+        )
       )
-    )
-  }
-
-  // 주문 통계 계산
-  const getOrderStats = () => {
-    const stats = {
-      total: orders.length,
-      received: orders.filter(order => order.status === 'received').length,
-      preparing: orders.filter(order => order.status === 'preparing').length,
-      completed: orders.filter(order => order.status === 'completed').length,
-      cancelled: orders.filter(order => order.status === 'cancelled').length
+      
+    } catch (error) {
+      console.error('재고 업데이트 실패:', error)
+      setError(handleAPIError(error, '재고 업데이트 중 오류가 발생했습니다.'))
+    } finally {
+      setLoading(false)
     }
-    return stats
+  }
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      await orderAPI.updateOrderStatus(orderId, newStatus)
+      
+      // 로컬 상태 업데이트
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      )
+      
+      // 통계 업데이트
+      loadAdminData()
+      
+    } catch (error) {
+      console.error('주문 상태 업데이트 실패:', error)
+      setError(handleAPIError(error, '주문 상태 업데이트 중 오류가 발생했습니다.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getOrderStats = () => {
+    return orderStats
+  }
+
+  // 에러 표시 컴포넌트
+  const ErrorMessage = () => {
+    if (!error) return null
+    
+    return (
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        background: '#fee2e2',
+        color: '#991b1b',
+        padding: '12px 16px',
+        borderRadius: '8px',
+        border: '1px solid #fecaca',
+        zIndex: 1000,
+        maxWidth: '400px'
+      }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>오류 발생</div>
+        <div>{error}</div>
+        <button 
+          onClick={() => setError(null)}
+          style={{
+            marginTop: '8px',
+            background: '#991b1b',
+            color: 'white',
+            border: 'none',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          닫기
+        </button>
+      </div>
+    )
+  }
+
+  // 로딩 표시 컴포넌트
+  const LoadingOverlay = () => {
+    if (!loading) return null
+    
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 999
+      }}>
+        <div style={{
+          background: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          textAlign: 'center'
+        }}>
+          <div>로딩 중...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="app">
-      <Header currentScreen={currentScreen} setCurrentScreen={setCurrentScreen} />
+      <Header 
+        currentScreen={currentScreen} 
+        onScreenChange={handleScreenChange}
+      />
+      
+      <ErrorMessage />
+      <LoadingOverlay />
       
       {currentScreen === 'order' && (
         <div className="order-screen">
@@ -246,13 +387,13 @@ function App() {
       {currentScreen === 'admin' && (
         <div className="admin-screen">
           <AdminDashboard orderStats={getOrderStats()} />
-          <InventoryManagement 
-            inventory={inventory} 
-            onUpdateInventory={updateInventory} 
+          <InventoryManagement
+            inventory={inventory}
+            onUpdateInventory={updateInventory}
           />
-          <OrderManagement 
-            orders={orders} 
-            onUpdateOrderStatus={updateOrderStatus} 
+          <OrderManagement
+            orders={orders}
+            onUpdateOrderStatus={updateOrderStatus}
           />
         </div>
       )}

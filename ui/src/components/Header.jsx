@@ -1,6 +1,6 @@
 import './Header.css'
 
-function Header({ currentScreen, setCurrentScreen }) {
+function Header({ currentScreen, onScreenChange }) {
   return (
     <header className="header">
       <div className="header-content">
@@ -11,13 +11,13 @@ function Header({ currentScreen, setCurrentScreen }) {
         <nav className="navigation">
           <button 
             className={`nav-button ${currentScreen === 'order' ? 'active' : ''}`}
-            onClick={() => setCurrentScreen('order')}
+            onClick={() => onScreenChange('order')}
           >
             주문하기
           </button>
           <button 
             className={`nav-button ${currentScreen === 'admin' ? 'active' : ''}`}
-            onClick={() => setCurrentScreen('admin')}
+            onClick={() => onScreenChange('admin')}
           >
             관리자
           </button>

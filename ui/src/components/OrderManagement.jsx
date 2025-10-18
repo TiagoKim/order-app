@@ -10,6 +10,17 @@ function OrderManagement({ orders, onUpdateOrderStatus }) {
     return `${month}월 ${day}일 ${hours}:${minutes}`
   }
 
+  const formatOrderItems = (items) => {
+    if (!items || !Array.isArray(items)) return '주문 정보 없음'
+    
+    return items.map(item => {
+      const optionsText = item.options && item.options.length > 0 
+        ? ` (${item.options.map(opt => opt.name).join(', ')})`
+        : ''
+      return `${item.menu_name || item.name} x${item.quantity}${optionsText}`
+    }).join(', ')
+  }
+
   const getStatusInfo = (status) => {
     switch (status) {
       case 'received':
@@ -62,7 +73,7 @@ function OrderManagement({ orders, onUpdateOrderStatus }) {
             <div key={order.id} className="order-item">
               <div className="order-header">
                 <div className="order-time">
-                  {formatDateTime(order.orderTime)}
+                  {formatDateTime(order.order_time || order.orderTime)}
                 </div>
                 <span className={`status-badge ${statusInfo.className}`}>
                   {statusInfo.label}
@@ -71,18 +82,24 @@ function OrderManagement({ orders, onUpdateOrderStatus }) {
               
               <div className="order-content">
                 <div className="order-items">
-                  {order.items.map((item, index) => (
-                    <div key={index} className="order-item-detail">
-                      <span className="item-name">{item.name}</span>
-                      <span className="item-quantity">x {item.quantity}</span>
-                      <span className="item-price">{item.price.toLocaleString()}원</span>
+                  {order.items && order.items.length > 0 ? (
+                    order.items.map((item, index) => (
+                      <div key={index} className="order-item-detail">
+                        <span className="item-name">{item.menu_name || item.name}</span>
+                        <span className="item-quantity">x {item.quantity}</span>
+                        <span className="item-price">{item.unit_price.toLocaleString()}원</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="order-item-detail">
+                      <span className="item-name">{formatOrderItems(order.items)}</span>
                     </div>
-                  ))}
+                  )}
                 </div>
                 
                 <div className="order-footer">
                   <div className="total-amount">
-                    총 금액: <strong>{order.totalAmount.toLocaleString()}원</strong>
+                    총 금액: <strong>{(order.total_amount || order.totalAmount || 0).toLocaleString()}원</strong>
                   </div>
                   
                   {statusInfo.buttonText && (

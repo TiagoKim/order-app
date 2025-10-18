@@ -12,7 +12,8 @@ function InventoryManagement({ inventory, onUpdateInventory }) {
   }
 
   const handleQuantityChange = (itemId, change) => {
-    const currentQuantity = inventory.find(item => item.id === itemId)?.quantity || 0
+    const currentQuantity = inventory.find(item => item.id === itemId)?.stock_quantity || 
+                           inventory.find(item => item.id === itemId)?.quantity || 0
     const newQuantity = Math.max(0, currentQuantity + change)
     onUpdateInventory(itemId, newQuantity)
   }
@@ -22,7 +23,8 @@ function InventoryManagement({ inventory, onUpdateInventory }) {
       <h2>재고 현황</h2>
       <div className="inventory-grid">
         {inventory.map(item => {
-          const statusInfo = getStatusInfo(item.quantity)
+          const quantity = item.stock_quantity || item.quantity || 0
+          const statusInfo = getStatusInfo(quantity)
           return (
             <div key={item.id} className="inventory-item">
               <div className="item-header">
@@ -35,18 +37,18 @@ function InventoryManagement({ inventory, onUpdateInventory }) {
               <div className="item-content">
                 <div className="quantity-display">
                   <span className="quantity-label">현재 재고</span>
-                  <span className="quantity-value">{item.quantity}개</span>
+                  <span className="quantity-value">{quantity}개</span>
                 </div>
                 
                 <div className="quantity-controls">
                   <button 
                     className="quantity-btn decrease"
                     onClick={() => handleQuantityChange(item.id, -1)}
-                    disabled={item.quantity <= 0}
+                    disabled={quantity <= 0}
                   >
                     -
                   </button>
-                  <span className="quantity-number">{item.quantity}</span>
+                  <span className="quantity-number">{quantity}</span>
                   <button 
                     className="quantity-btn increase"
                     onClick={() => handleQuantityChange(item.id, 1)}

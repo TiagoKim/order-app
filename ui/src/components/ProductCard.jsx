@@ -34,9 +34,10 @@ function ProductCard({ item, onAddToCart, inventory }) {
     const inventoryItem = inventory?.find(inv => inv.name === item.name)
     if (!inventoryItem) return { status: 'unknown', text: '재고 정보 없음' }
     
-    if (inventoryItem.quantity === 0) {
+    const quantity = inventoryItem.stock_quantity || inventoryItem.quantity || 0
+    if (quantity === 0) {
       return { status: 'out', text: '품절' }
-    } else if (inventoryItem.quantity < 5) {
+    } else if (quantity < 5) {
       return { status: 'low', text: '재고 부족' }
     } else {
       return { status: 'normal', text: '재고 있음' }
@@ -50,7 +51,7 @@ function ProductCard({ item, onAddToCart, inventory }) {
     <div className="product-card">
       <div className="product-image">
         <img 
-          src={item.image} 
+          src={item.image_url || item.image} 
           alt={item.name}
           className="product-img"
           loading="lazy"
