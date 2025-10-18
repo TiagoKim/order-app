@@ -162,7 +162,7 @@ const insertInitialData = async () => {
           name: '아메리카노(ICE)',
           description: '시원하고 깔끔한 아이스 아메리카노',
           price: 4000,
-          image_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=200&fit=crop&crop=center',
+          image_url: '/images/americano-ice.jpg',
           stock_quantity: 10,
           category: 'coffee'
         },
@@ -170,7 +170,7 @@ const insertInitialData = async () => {
           name: '아메리카노(HOT)',
           description: '따뜻하고 진한 핫 아메리카노',
           price: 4000,
-          image_url: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=300&h=200&fit=crop&crop=center',
+          image_url: '/images/americano-hot.jpg',
           stock_quantity: 8,
           category: 'coffee'
         },
@@ -178,7 +178,7 @@ const insertInitialData = async () => {
           name: '카페라떼',
           description: '부드러운 우유와 에스프레소의 조화',
           price: 5000,
-          image_url: 'https://images.unsplash.com/photo-1561047029-3000c68339ca?w=300&h=200&fit=crop&crop=center',
+          image_url: '/images/caffe-latte.jpg',
           stock_quantity: 15,
           category: 'coffee'
         },
@@ -186,7 +186,7 @@ const insertInitialData = async () => {
           name: '카라멜 마키아토',
           description: '달콤한 카라멜과 에스프레소',
           price: 5500,
-          image_url: 'https://images.unsplash.com/photo-1517701604599-bb29b5650904?w=300&h=200&fit=crop&crop=center',
+          image_url: '/images/caramel-coffee.jpg',
           stock_quantity: 12,
           category: 'coffee'
         },
@@ -194,7 +194,7 @@ const insertInitialData = async () => {
           name: '딸기 스무디',
           description: '상큼한 딸기와 요거트의 만남',
           price: 6000,
-          image_url: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=300&h=200&fit=crop&crop=center',
+          image_url: '/images/strawberry-smoothie.jpg',
           stock_quantity: 7,
           category: 'smoothie'
         },
@@ -202,7 +202,7 @@ const insertInitialData = async () => {
           name: '망고 스무디',
           description: '달콤한 망고의 시원한 스무디',
           price: 6000,
-          image_url: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&h=200&fit=crop&crop=center',
+          image_url: '/images/mango-smoothie.jpg',
           stock_quantity: 9,
           category: 'smoothie'
         }
