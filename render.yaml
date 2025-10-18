@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: cozy-coffee-backend
+    env: node
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_HOST
+        fromDatabase:
+          name: order_app_db_xhv9
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: order_app_db_xhv9
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: order_app_db_xhv9
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: order_app_db_xhv9
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: order_app_db_xhv9
+          property: password
+      - key: FRONTEND_URL
+        value: https://cozy-coffee-frontend.onrender.com
+
+databases:
+  - name: order_app_db_xhv9
+    plan: free

@@ -1,5 +1,5 @@
 // API 서비스 - 백엔드와의 통신을 담당
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 // 공통 API 호출 함수
 const apiCall = async (endpoint, options = {}) => {
@@ -93,7 +93,8 @@ export const handleAPIError = (error, defaultMessage = '오류가 발생했습�
 // API 상태 확인
 export const checkAPIHealth = async () => {
   try {
-    const response = await fetch('http://localhost:3001/');
+    const baseUrl = API_BASE_URL.replace('/api', '');
+    const response = await fetch(`${baseUrl}/`);
     const data = await response.json();
     return data.success;
   } catch (error) {

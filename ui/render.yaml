@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: cozy-coffee-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://your-backend-app.onrender.com/api
+        sync: false

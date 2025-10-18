@@ -8,7 +8,10 @@ const PORT = process.env.PORT || 3001;
 
 // 미들웨어 설정
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:5173',
+    'https://cozy-coffee-frontend.onrender.com' // Render 프론트엔드 URL
+  ],
   credentials: true
 }));
 
@@ -56,7 +59,7 @@ const startServer = async () => {
     // 데이터베이스 초기화
     await initializeDatabase();
     
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
       console.log(`📱 프론트엔드 URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
       console.log(`🌐 API 서버 URL: http://localhost:${PORT}`);

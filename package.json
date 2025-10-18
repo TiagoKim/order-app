@@ -1,0 +1,29 @@
+{
+  "name": "cozy-coffee-order-app",
+  "version": "1.0.0",
+  "description": "COZY 커피 주문 앱 - 풀스택 애플리케이션",
+  "main": "server/app.js",
+  "scripts": {
+    "start": "cd server && npm start",
+    "dev": "concurrently \"cd server && npm run dev\" \"cd ui && npm run dev\"",
+    "build": "cd ui && npm run build",
+    "install-all": "cd server && npm install && cd ../ui && npm install",
+    "render-postbuild": "cd server && npm install",
+    "render-start": "cd server && npm start"
+  },
+  "keywords": [
+    "coffee",
+    "order",
+    "react",
+    "express",
+    "postgresql"
+  ],
+  "author": "COZY Team",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

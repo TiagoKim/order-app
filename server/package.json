@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "COZY 커피 주문 앱 백엔드 API 서버",
   "main": "app.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
