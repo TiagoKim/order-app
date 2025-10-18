@@ -6,17 +6,26 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+    "init-db": "node scripts/init-db.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["coffee", "order", "api", "express", "nodejs"],
+  "keywords": [
+    "coffee",
+    "order",
+    "api",
+    "express",
+    "nodejs"
+  ],
   "author": "COZY Team",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
+    "@types/pg": "^8.15.5",
     "nodemon": "^3.1.10"
   }
 }

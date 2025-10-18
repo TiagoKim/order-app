@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { initializeDatabase } = require('./config/database');
 require('dotenv').config();
 
 const app = express();
@@ -50,10 +51,22 @@ app.use((err, req, res, next) => {
 });
 
 // 서버 시작
-app.listen(PORT, () => {
-  console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
-  console.log(`📱 프론트엔드 URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
-  console.log(`🌐 API 서버 URL: http://localhost:${PORT}`);
-});
+const startServer = async () => {
+  try {
+    // 데이터베이스 초기화
+    await initializeDatabase();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 서버가 포트 ${PORT}에서 실행 중입니다.`);
+      console.log(`📱 프론트엔드 URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+      console.log(`🌐 API 서버 URL: http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ 서버 시작 실패:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 module.exports = app;
