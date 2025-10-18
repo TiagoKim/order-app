@@ -126,3 +126,320 @@
 - **실시간 업데이트**: 주문 및 재고 상태 실시간 반영
 - **시각적 구분**: 각 섹션별 명확한 구분선과 배경색
 - **일관된 디자인**: 주문하기 화면과 일관된 색상 및 스타일
+
+## 5. 백엔드 개발 요구사항
+
+### 5.1 데이터 모델 설계
+
+#### 5.1.1 Menus 테이블
+메뉴 정보를 저장하는 테이블
+
+**필드 구성:**
+- `id` (INTEGER, PRIMARY KEY, AUTO_INCREMENT): 메뉴 고유 ID
+- `name` (VARCHAR(100), NOT NULL): 메뉴 이름 (예: "아메리카노(ICE)")
+- `description` (TEXT): 메뉴 설명
+- `price` (INTEGER, NOT NULL): 기본 가격 (원 단위)
+- `image_url` (VARCHAR(500)): 메뉴 이미지 URL
+- `stock_quantity` (INTEGER, DEFAULT 0): 재고 수량
+- `category` (VARCHAR(50)): 메뉴 카테고리 (예: "coffee", "smoothie")
+- `is_available` (BOOLEAN, DEFAULT true): 판매 가능 여부
+- `created_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP): 생성 시간
+- `updated_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP): 수정 시간
+
+#### 5.1.2 Options 테이블
+메뉴 옵션 정보를 저장하는 테이블
+
+**필드 구성:**
+- `id` (INTEGER, PRIMARY KEY, AUTO_INCREMENT): 옵션 고유 ID
+- `name` (VARCHAR(100), NOT NULL): 옵션 이름 (예: "샷 추가")
+- `price` (INTEGER, DEFAULT 0): 옵션 추가 가격 (원 단위)
+- `menu_id` (INTEGER, FOREIGN KEY): 연결된 메뉴 ID
+- `is_available` (BOOLEAN, DEFAULT true): 옵션 사용 가능 여부
+- `created_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP): 생성 시간
+- `updated_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP): 수정 시간
+
+#### 5.1.3 Orders 테이블
+주문 정보를 저장하는 테이블
+
+**필드 구성:**
+- `id` (INTEGER, PRIMARY KEY, AUTO_INCREMENT): 주문 고유 ID
+- `order_number` (VARCHAR(20), UNIQUE): 주문 번호 (예: "ORD-20240731-001")
+- `order_time` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP): 주문 시간
+- `status` (ENUM('received', 'preparing', 'completed', 'cancelled'), DEFAULT 'received'): 주문 상태
+- `total_amount` (INTEGER, NOT NULL): 총 주문 금액
+- `customer_name` (VARCHAR(100)): 고객 이름 (선택사항)
+- `customer_phone` (VARCHAR(20)): 고객 전화번호 (선택사항)
+- `notes` (TEXT): 특이사항 또는 요청사항
+- `created_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP): 생성 시간
+- `updated_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP): 수정 시간
+
+#### 5.1.4 Order_Items 테이블
+주문 상세 내역을 저장하는 테이블
+
+**필드 구성:**
+- `id` (INTEGER, PRIMARY KEY, AUTO_INCREMENT): 주문 아이템 고유 ID
+- `order_id` (INTEGER, FOREIGN KEY): 주문 ID
+- `menu_id` (INTEGER, FOREIGN KEY): 메뉴 ID
+- `quantity` (INTEGER, NOT NULL): 주문 수량
+- `unit_price` (INTEGER, NOT NULL): 단위 가격 (옵션 포함)
+- `total_price` (INTEGER, NOT NULL): 아이템 총 가격
+- `options` (JSON): 선택된 옵션 정보
+- `created_at` (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP): 생성 시간
+
+### 5.2 데이터 스키마를 위한 사용자 흐름
+
+#### 5.2.1 메뉴 조회 및 표시 흐름
+1. **프론트엔드**: 메뉴 목록 조회 API 호출
+2. **백엔드**: Menus 테이블에서 `is_available = true`인 메뉴들을 조회
+3. **백엔드**: 각 메뉴의 Options 테이블에서 사용 가능한 옵션들을 조회
+4. **백엔드**: 메뉴 정보와 옵션 정보를 JSON 형태로 반환
+5. **프론트엔드**: 받은 데이터를 화면에 표시
+6. **관리자 화면**: 재고 수량(`stock_quantity`) 정보를 별도로 표시
+
+#### 5.2.2 주문 처리 흐름
+1. **사용자**: 장바구니에서 '주문하기' 버튼 클릭
+2. **프론트엔드**: 주문 정보를 JSON 형태로 구성
+3. **백엔드**: 주문 정보 유효성 검사
+4. **백엔드**: 재고 수량 확인 및 차감
+5. **백엔드**: Orders 테이블에 주문 정보 저장
+6. **백엔드**: Order_Items 테이블에 주문 상세 내역 저장
+7. **백엔드**: 주문 번호 생성 및 반환
+8. **프론트엔드**: 주문 완료 메시지 표시
+
+#### 5.2.3 주문 상태 관리 흐름
+1. **관리자**: 관리자 화면에서 주문 목록 조회
+2. **백엔드**: Orders 테이블에서 주문 목록 반환
+3. **관리자**: '주문 접수' → '제조 중' → '완료' 버튼 클릭
+4. **백엔드**: Orders 테이블의 `status` 필드 업데이트
+5. **프론트엔드**: 실시간으로 주문 상태 반영
+
+### 5.3 API 설계
+
+#### 5.3.1 메뉴 관련 API
+
+**GET /api/menus**
+- **목적**: 사용 가능한 메뉴 목록 조회
+- **응답 예시**:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "아메리카노(ICE)",
+      "description": "시원하고 깔끔한 아이스 아메리카노",
+      "price": 4000,
+      "image_url": "https://example.com/americano-ice.jpg",
+      "stock_quantity": 10,
+      "category": "coffee",
+      "options": [
+        {
+          "id": 1,
+          "name": "샷 추가",
+          "price": 500
+        },
+        {
+          "id": 2,
+          "name": "시럽 추가",
+          "price": 0
+        }
+      ]
+    }
+  ]
+}
+```
+
+**GET /api/menus/inventory**
+- **목적**: 관리자용 재고 정보 조회
+- **응답 예시**:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "아메리카노(ICE)",
+      "stock_quantity": 10
+    }
+  ]
+}
+```
+
+**PUT /api/menus/:id/inventory**
+- **목적**: 재고 수량 수정
+- **요청 본문**:
+```json
+{
+  "stock_quantity": 15
+}
+```
+
+#### 5.3.2 주문 관련 API
+
+**POST /api/orders**
+- **목적**: 새 주문 생성
+- **요청 본문**:
+```json
+{
+  "items": [
+    {
+      "menu_id": 1,
+      "quantity": 2,
+      "options": [
+        {
+          "option_id": 1,
+          "name": "샷 추가",
+          "price": 500
+        }
+      ]
+    }
+  ],
+  "customer_name": "홍길동",
+  "customer_phone": "010-1234-5678",
+  "notes": "아이스 많이"
+}
+```
+- **응답 예시**:
+```json
+{
+  "success": true,
+  "data": {
+    "order_id": 123,
+    "order_number": "ORD-20240731-001",
+    "total_amount": 9000,
+    "order_time": "2024-07-31T13:00:00Z"
+  }
+}
+```
+
+**GET /api/orders**
+- **목적**: 주문 목록 조회 (관리자용)
+- **쿼리 파라미터**: 
+  - `status`: 주문 상태 필터 (received, preparing, completed, cancelled)
+  - `limit`: 페이지당 항목 수 (기본값: 20)
+  - `offset`: 페이지 오프셋 (기본값: 0)
+- **응답 예시**:
+```json
+{
+  "success": true,
+  "data": {
+    "orders": [
+      {
+        "id": 123,
+        "order_number": "ORD-20240731-001",
+        "order_time": "2024-07-31T13:00:00Z",
+        "status": "received",
+        "total_amount": 9000,
+        "customer_name": "홍길동",
+        "items": [
+          {
+            "menu_name": "아메리카노(ICE)",
+            "quantity": 2,
+            "unit_price": 4500,
+            "total_price": 9000,
+            "options": ["샷 추가"]
+          }
+        ]
+      }
+    ],
+    "total": 1,
+    "limit": 20,
+    "offset": 0
+  }
+}
+```
+
+**GET /api/orders/:id**
+- **목적**: 특정 주문 상세 정보 조회
+- **응답 예시**:
+```json
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "order_number": "ORD-20240731-001",
+    "order_time": "2024-07-31T13:00:00Z",
+    "status": "received",
+    "total_amount": 9000,
+    "customer_name": "홍길동",
+    "customer_phone": "010-1234-5678",
+    "notes": "아이스 많이",
+    "items": [
+      {
+        "menu_name": "아메리카노(ICE)",
+        "quantity": 2,
+        "unit_price": 4500,
+        "total_price": 9000,
+        "options": ["샷 추가"]
+      }
+    ]
+  }
+}
+```
+
+**PUT /api/orders/:id/status**
+- **목적**: 주문 상태 변경
+- **요청 본문**:
+```json
+{
+  "status": "preparing"
+}
+```
+
+#### 5.3.3 통계 관련 API
+
+**GET /api/orders/stats**
+- **목적**: 주문 통계 조회 (관리자 대시보드용)
+- **응답 예시**:
+```json
+{
+  "success": true,
+  "data": {
+    "total_orders": 150,
+    "received_orders": 5,
+    "preparing_orders": 3,
+    "completed_orders": 140,
+    "cancelled_orders": 2
+  }
+}
+```
+
+### 5.4 에러 처리 및 응답 형식
+
+#### 5.4.1 표준 응답 형식
+```json
+{
+  "success": true|false,
+  "data": {},
+  "message": "성공 메시지 또는 에러 메시지",
+  "error_code": "ERROR_CODE" // 에러 시에만 포함
+}
+```
+
+#### 5.4.2 주요 에러 코드
+- `INVALID_REQUEST`: 잘못된 요청 데이터
+- `MENU_NOT_FOUND`: 메뉴를 찾을 수 없음
+- `INSUFFICIENT_STOCK`: 재고 부족
+- `ORDER_NOT_FOUND`: 주문을 찾을 수 없음
+- `INVALID_STATUS`: 잘못된 주문 상태
+- `DATABASE_ERROR`: 데이터베이스 오류
+- `INTERNAL_ERROR`: 서버 내부 오류
+
+### 5.5 보안 및 검증 요구사항
+
+#### 5.5.1 입력 데이터 검증
+- 모든 숫자 필드: 양수만 허용
+- 문자열 필드: 길이 제한 및 특수문자 검증
+- 이메일/전화번호: 형식 검증
+- JSON 데이터: 스키마 검증
+
+#### 5.5.2 데이터베이스 제약조건
+- 외래키 제약조건 설정
+- 인덱스 최적화 (주문 시간, 메뉴 ID 등)
+- 트랜잭션 처리 (주문 생성 시 재고 차감과 주문 저장)
+
+#### 5.5.3 API 보안
+- CORS 설정
+- 요청 크기 제한
+- SQL Injection 방지
+- XSS 공격 방지
