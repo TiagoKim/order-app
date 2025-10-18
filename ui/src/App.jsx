@@ -2,11 +2,33 @@ import { useState } from 'react'
 import Header from './components/Header'
 import ProductCard from './components/ProductCard'
 import ShoppingCart from './components/ShoppingCart'
+import AdminDashboard from './components/AdminDashboard'
+import InventoryManagement from './components/InventoryManagement'
+import OrderManagement from './components/OrderManagement'
 import './App.css'
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState('order')
   const [cart, setCart] = useState([])
+  
+  // 관리자 화면 상태 관리
+  const [inventory, setInventory] = useState([
+    { id: 1, name: '아메리카노(ICE)', quantity: 10 },
+    { id: 2, name: '아메리카노(HOT)', quantity: 8 },
+    { id: 3, name: '카페라떼', quantity: 15 }
+  ])
+  
+  const [orders, setOrders] = useState([
+    {
+      id: 1,
+      orderTime: new Date('2024-07-31T13:00:00'),
+      status: 'received',
+      items: [
+        { name: '아메리카노(ICE)', quantity: 1, price: 4000 }
+      ],
+      totalAmount: 4000
+    }
+  ])
 
   // 커피 및 스무디 메뉴 데이터
   const menuItems = [
@@ -55,6 +77,13 @@ function App() {
   ]
 
   const addToCart = (item, options) => {
+    // 재고 확인
+    const inventoryItem = inventory.find(inv => inv.name === item.name)
+    if (inventoryItem && inventoryItem.quantity <= 0) {
+      alert(`${item.name}이(가) 품절되었습니다.`)
+      return
+    }
+
     const cartItem = {
       id: `${item.id}-${JSON.stringify(options)}`,
       name: item.name,
@@ -70,6 +99,13 @@ function App() {
       )
 
       if (existingItem) {
+        // 재고 확인 (기존 아이템 + 새로 추가할 아이템)
+        const totalQuantity = existingItem.quantity + 1
+        if (inventoryItem && totalQuantity > inventoryItem.quantity) {
+          alert(`재고가 부족합니다. (현재 재고: ${inventoryItem.quantity}개)`)
+          return prevCart
+        }
+        
         return prevCart.map(cartItem =>
           cartItem.id === existingItem.id
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
@@ -111,8 +147,70 @@ function App() {
       return
     }
     
+    // 재고 재확인 및 차감
+    const inventoryUpdates = []
+    for (const cartItem of cart) {
+      const inventoryItem = inventory.find(inv => inv.name === cartItem.name)
+      if (!inventoryItem || inventoryItem.quantity < cartItem.quantity) {
+        alert(`${cartItem.name}의 재고가 부족합니다. (현재 재고: ${inventoryItem?.quantity || 0}개)`)
+        return
+      }
+      inventoryUpdates.push({
+        id: inventoryItem.id,
+        newQuantity: inventoryItem.quantity - cartItem.quantity
+      })
+    }
+    
+    // 재고 차감
+    inventoryUpdates.forEach(update => {
+      updateInventory(update.id, update.newQuantity)
+    })
+    
+    // 주문 생성
+    const newOrder = {
+      id: Date.now(),
+      orderTime: new Date(),
+      status: 'received',
+      items: cart.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.basePrice + (item.options.addShot ? 500 : 0) + (item.options.addSyrup ? 0 : 0)
+      })),
+      totalAmount: getTotalPrice()
+    }
+    
+    setOrders(prevOrders => [newOrder, ...prevOrders])
     alert(`주문이 완료되었습니다!\n총 금액: ${getTotalPrice().toLocaleString()}원`)
     setCart([])
+  }
+
+  // 관리자 화면 함수들
+  const updateInventory = (itemId, newQuantity) => {
+    setInventory(prevInventory =>
+      prevInventory.map(item =>
+        item.id === itemId ? { ...item, quantity: newQuantity } : item
+      )
+    )
+  }
+
+  const updateOrderStatus = (orderId, newStatus) => {
+    setOrders(prevOrders =>
+      prevOrders.map(order =>
+        order.id === orderId ? { ...order, status: newStatus } : order
+      )
+    )
+  }
+
+  // 주문 통계 계산
+  const getOrderStats = () => {
+    const stats = {
+      total: orders.length,
+      received: orders.filter(order => order.status === 'received').length,
+      preparing: orders.filter(order => order.status === 'preparing').length,
+      completed: orders.filter(order => order.status === 'completed').length,
+      cancelled: orders.filter(order => order.status === 'cancelled').length
+    }
+    return stats
   }
 
   return (
@@ -129,6 +227,7 @@ function App() {
                   key={item.id}
                   item={item}
                   onAddToCart={addToCart}
+                  inventory={inventory}
                 />
               ))}
             </div>
@@ -146,7 +245,15 @@ function App() {
       
       {currentScreen === 'admin' && (
         <div className="admin-screen">
-          <h2>관리자 화면 (구현 예정)</h2>
+          <AdminDashboard orderStats={getOrderStats()} />
+          <InventoryManagement 
+            inventory={inventory} 
+            onUpdateInventory={updateInventory} 
+          />
+          <OrderManagement 
+            orders={orders} 
+            onUpdateOrderStatus={updateOrderStatus} 
+          />
         </div>
       )}
     </div>

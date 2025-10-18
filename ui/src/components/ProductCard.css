@@ -53,11 +53,48 @@
   flex-direction: column;
 }
 
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
 .product-name {
   font-size: 1.2rem;
   font-weight: bold;
   color: #333;
-  margin: 0 0 0.5rem 0;
+  margin: 0;
+  flex: 1;
+}
+
+.inventory-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 0.5rem;
+}
+
+.inventory-status.normal {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.inventory-status.low {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.inventory-status.out {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.inventory-status.unknown {
+  background-color: #f3f4f6;
+  color: #374151;
 }
 
 .product-price {
@@ -92,6 +129,12 @@
   width: 16px;
   height: 16px;
   accent-color: #2563eb;
+  cursor: pointer;
+}
+
+.option-item input[type="checkbox"]:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .option-item:hover {
@@ -120,4 +163,20 @@
 
 .add-to-cart-button:active {
   transform: translateY(0);
+}
+
+.add-to-cart-button.disabled {
+  background-color: #9ca3af;
+  border-color: #9ca3af;
+  color: #fff;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.add-to-cart-button.disabled:hover {
+  background-color: #9ca3af;
+  border-color: #9ca3af;
+  transform: none;
+  box-shadow: none;
 }

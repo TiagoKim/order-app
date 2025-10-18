@@ -33,8 +33,7 @@
 .admin-screen {
   width: 100%;
   max-width: 1200px;
-  padding: 2rem;
-  text-align: center;
+  padding: 0 2rem 2rem 2rem;
 }
 
 .admin-screen h2 {
@@ -45,6 +44,10 @@
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .order-screen {
+    padding: 0 1rem 1rem 1rem;
+  }
+  
+  .admin-screen {
     padding: 0 1rem 1rem 1rem;
   }
   
